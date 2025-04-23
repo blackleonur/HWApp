@@ -8,3 +8,7 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Vision Camera için ProGuard kuralları
+-keep class com.facebook.react.turbomodule.** { *; }
+-keep class com.mrousavy.camera.** { *; }

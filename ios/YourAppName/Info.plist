@@ -1,0 +1,16 @@
+<key>UIAppFonts</key>
+<array>
+  <string>Ionicons.ttf</string>
+</array>
+
+<!-- Kamera izni açıklaması -->
+<key>NSCameraUsageDescription</key>
+<string>Ürün etiketlerini tarayabilmek için kameranıza erişim izni gerekiyor</string>
+
+<!-- Fotoğraf galerisi izni açıklaması -->
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Galeriden ürün fotoğraflarını seçebilmek için fotoğraf kitaplığınıza erişim izni gerekiyor</string>
+
+<!-- Mikrofon izni açıklaması (kamera modülü genellikle bunu da gerektirir) -->
+<key>NSMicrophoneUsageDescription</key>
+<string>Kamera özelliği için mikrofona erişim gerekiyor</string> 
