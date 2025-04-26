@@ -1,11 +1,11 @@
 import {NavigatorScreenParams} from '@react-navigation/native';
 
 export type TabParamList = {
-  Ana: undefined;
+  'Ana Sayfa': undefined;
+  Haberler: undefined;
+  Geribildirim: undefined;
+  Sorgula: undefined;
   Tara: undefined;
-  Listeler: undefined;
-  Bilgi: undefined;
-  Ayarlar: undefined;
 };
 
 export type RootStackParamList = {

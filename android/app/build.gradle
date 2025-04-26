@@ -80,7 +80,7 @@ android {
     namespace "com.hwapp"
     defaultConfig {
         applicationId "com.hwapp"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
