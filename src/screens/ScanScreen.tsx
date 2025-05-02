@@ -12,6 +12,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
 } from 'react-native';
 import {
   Camera,
@@ -36,6 +37,17 @@ const AZURE_ENDPOINT =
 
 // OCR.space API anahtarı - yedek olarak tutuyoruz
 const OCR_SPACE_API_KEY = 'K89647579688957';
+
+const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
+
+const DESIGN_WIDTH = 393;
+const DESIGN_HEIGHT = 852;
+
+const scale = SCREEN_WIDTH / DESIGN_WIDTH;
+const verticalScale = SCREEN_HEIGHT / DESIGN_HEIGHT;
+
+const normalize = (size: number) => Math.round(scale * size);
+const normalizeVertical = (size: number) => Math.round(verticalScale * size);
 
 export default function ScanScreen() {
   const navigation = useNavigation();
@@ -64,6 +76,9 @@ export default function ScanScreen() {
   const [scannedText, setScannedText] = useState<string>('');
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deviceId, setDeviceId] = useState<string>('');
+  const [previewModalVisible, setPreviewModalVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('ScanScreen yükleniyor...');
@@ -150,17 +165,30 @@ export default function ScanScreen() {
         const photo = await cameraRef.current.takePhoto({
           flash: 'off',
         });
-        setIsProcessing(true);
 
-        const text = await processImage(`file://${photo.path}`);
-        if (text) {
-          await queryProduct(text);
-        }
+        const imageUri = `file://${photo.path}`;
+        setPreviewImage(imageUri);
+        setPreviewModalVisible(true);
       } catch (error) {
         console.error('Fotoğraf çekilirken hata oluştu:', error);
-        setIsProcessing(false);
       }
     }
+  };
+
+  const handlePreviewConfirm = async () => {
+    if (previewImage) {
+      setPreviewModalVisible(false);
+      setIsProcessing(true);
+      const text = await processImage(previewImage);
+      if (text) {
+        await queryProduct(text);
+      }
+    }
+  };
+
+  const handlePreviewCancel = () => {
+    setPreviewModalVisible(false);
+    setPreviewImage(null);
   };
 
   const pickImage = async () => {
@@ -454,17 +482,49 @@ export default function ScanScreen() {
                     />
                   </View>
                 </TouchableOpacity>
-                <View style={[styles.scanFrameMask, {bottom: 0}]} />
               </View>
             </View>
           </View>
-          <View style={styles.buttonRow}>
+          <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={pickImage}>
               <Text style={styles.buttonText}>Galeriden Seç</Text>
             </TouchableOpacity>
           </View>
         </>
       )}
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={previewModalVisible}
+        onRequestClose={handlePreviewCancel}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Fotoğraf Önizleme</Text>
+            {previewImage && (
+              <View style={styles.previewContainer}>
+                <Image
+                  source={{uri: previewImage}}
+                  style={styles.previewImage}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+            <View style={styles.previewButtonRow}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={handlePreviewCancel}>
+                <Text style={styles.modalButtonText}>Yeniden Çek</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.queryButton]}
+                onPress={handlePreviewConfirm}>
+                <Text style={styles.modalButtonText}>Onayla</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         animationType="slide"
@@ -590,15 +650,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    paddingTop: 0,
   },
   cameraContainer: {
     flex: 1,
     position: 'relative',
-    marginTop: 0,
     backgroundColor: '#333333',
-    justifyContent: 'flex-end',
-    paddingBottom: -100,
   },
   camera: {
     width: '100%',
@@ -611,17 +667,14 @@ const styles = StyleSheet.create({
   scanFrameContainer: {
     width: '100%',
     height: '100%',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: -400,
-    marginTop: 250,
   },
   scanFrameWrapper: {
-    width: '90%',
-    height: '40%',
+    width: normalize(300),
+    height: normalizeVertical(400),
     overflow: 'hidden',
     position: 'relative',
-    marginBottom: 0,
   },
   scanFrame: {
     position: 'absolute',
@@ -633,40 +686,32 @@ const styles = StyleSheet.create({
     borderColor: '#2196F3',
     backgroundColor: 'transparent',
   },
-  scanFrameMask: {
-    flex: 1,
-    backgroundColor: 'rgba(51, 51, 51, 0.97)',
-    width: '100%',
-  },
   scanFrameCorner: {
     position: 'absolute',
-    width: 20,
-    height: 20,
+    width: normalize(20),
+    height: normalize(20),
     borderColor: '#2196F3',
     borderWidth: 3,
   },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 15,
-    backgroundColor: '#fff',
-    position: 'relative',
-    bottom: 0,
+  buttonContainer: {
+    position: 'absolute',
+    bottom: normalizeVertical(100),
     left: 0,
     right: 0,
-    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
   },
   button: {
     backgroundColor: '#2196F3',
-    padding: 15,
-    borderRadius: 5,
+    padding: normalize(15),
+    borderRadius: normalize(5),
     alignItems: 'center',
-    flex: 1,
-    marginHorizontal: 5,
+    width: normalize(200),
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: normalize(16),
     fontWeight: 'bold',
   },
   processingContainer: {
@@ -922,5 +967,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#e0e0e0',
+  },
+  previewContainer: {
+    width: '100%',
+    height: 300,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    marginVertical: 15,
+    overflow: 'hidden',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+  },
+  previewButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
   },
 });

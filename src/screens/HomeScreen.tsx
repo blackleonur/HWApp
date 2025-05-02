@@ -10,6 +10,7 @@ import {
   Easing,
   Dimensions,
   ImageStyle,
+  Platform,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {TabParamList} from '../types/navigation';
@@ -18,12 +19,19 @@ import LinearGradient from 'react-native-linear-gradient';
 
 type HomeScreenNavigationProp = BottomTabNavigationProp<TabParamList>;
 
-// Ekran boyutlarını al
 const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
 
-// Ölçeklendirme faktörleri
-const scale = SCREEN_WIDTH / 393; // 393 tasarım genişliği referans alındı
-const verticalScale = SCREEN_HEIGHT / 852; // 852 tasarım yüksekliği referans alındı
+const DESIGN_WIDTH = 393;
+const DESIGN_HEIGHT = 852;
+
+const scale = SCREEN_WIDTH / DESIGN_WIDTH;
+const verticalScale = SCREEN_HEIGHT / DESIGN_HEIGHT;
+
+const normalize = (size: number) => Math.round(scale * size);
+const normalizeVertical = (size: number) => Math.round(verticalScale * size);
+
+const ASPECT_RATIO = SCREEN_WIDTH / SCREEN_HEIGHT;
+const isSmallScreen = ASPECT_RATIO > 0.5;
 
 // Kesikli çizgi bileşeni
 const DashedBorder = () => {
@@ -69,29 +77,21 @@ const DotPattern = () => {
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-
-  // Kalp atışı animasyonu için değer
   const heartbeat = useRef(new Animated.Value(1)).current;
-
-  // Sol ve sağ ok için değil, container için animasyon değeri
   const containerTranslate = useRef(new Animated.Value(0)).current;
 
-  // Animasyonu başlatan useEffect
   useEffect(() => {
-    // Container için düşme animasyonu
     const animateContainer = () => {
       Animated.loop(
         Animated.sequence([
-          // Container aşağı düşer
           Animated.timing(containerTranslate, {
-            toValue: 10, // 10 birim aşağı
+            toValue: 10,
             duration: 600,
             useNativeDriver: true,
             easing: Easing.inOut(Easing.ease),
           }),
-          // Container yukarı çıkar
           Animated.timing(containerTranslate, {
-            toValue: 0, // başlangıç pozisyonuna
+            toValue: 0,
             duration: 600,
             useNativeDriver: true,
             easing: Easing.inOut(Easing.ease),
@@ -100,104 +100,96 @@ export default function HomeScreen() {
       ).start();
     };
 
-    // İlk animasyonu başlat
     animateContainer();
-
-    // Temizleme fonksiyonu
     return () => {
       containerTranslate.stopAnimation();
     };
   }, [containerTranslate]);
 
   return (
-    <ScrollView style={styles.container} bounces={false}>
-      <View style={styles.innerContainer}>
-        {/* Noktalı desen arka planı */}
-        <DotPattern />
-
-        {/* Üst kısım - Logo */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require('../../assets/HomeScreenAssets/LOGO.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text style={styles.logoText}>
-              Zulmü Destekleyenleri Karınca Misali Boykot Et
-            </Text>
-            <DashedBorder />
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollView} bounces={false}>
+        <View style={styles.innerContainer}>
+          <DotPattern />
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Image
+                source={require('../../assets/HomeScreenAssets/LOGO.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+              <Text style={styles.logoText}>
+                Zulmü Destekleyenleri Karınca Misali Boykot Et
+              </Text>
+              <DashedBorder />
+            </View>
           </View>
-        </View>
 
-        {/* Orta kısım - Slogan ve Açıklama */}
-        <View style={styles.sloganContainer}>
-          <View style={styles.sloganContentContainer}>
-            <View style={styles.sloganBackground}>
-              <View style={styles.sloganOverlayContainer}>
-                <Image
-                  source={require('../../assets/HomeScreenAssets/SloganUnlem.png')}
-                  style={styles.sloganIcon}
-                  resizeMode="contain"
-                />
-                <View style={styles.sloganTextContainer}>
-                  <Text style={styles.sloganText}>
-                    Adalet, vicdan ve bilinçli tüketim için bir adım attın.
-                    Unutma, karınca misali küçük adımlar büyük değişimlerin
-                    başlangıcıdır.
-                  </Text>
-                  <Text style={styles.sloganSignature}>Kamibo ailesi</Text>
+          <View style={styles.sloganContainer}>
+            <View style={styles.sloganContentContainer}>
+              <View style={styles.sloganBackground}>
+                <View style={styles.sloganOverlayContainer}>
+                  <Image
+                    source={require('../../assets/HomeScreenAssets/SloganUnlem.png')}
+                    style={styles.sloganIcon}
+                    resizeMode="contain"
+                  />
+                  <View style={styles.sloganTextContainer}>
+                    <Text style={styles.sloganText}>
+                      Adalet, vicdan ve bilinçli tüketim için bir adım attın.
+                      Unutma, karınca misali küçük adımlar büyük değişimlerin
+                      başlangıcıdır.
+                    </Text>
+                    <Text style={styles.sloganSignature}>Kamibo ailesi</Text>
+                  </View>
                 </View>
               </View>
             </View>
           </View>
-        </View>
 
-        {/* Boykot Görseli */}
-        <View style={styles.boykotContainer}>
-          <View style={styles.boykotBorder}>
-            <Image
-              source={require('../../assets/HomeScreenAssets/SloganNew.png')}
-              style={styles.boykotImage}
-              resizeMode="contain"
-            />
+          <View style={styles.boykotContainer}>
+            <View style={styles.boykotBorder}>
+              <Image
+                source={require('../../assets/HomeScreenAssets/SloganNew.png')}
+                style={styles.boykotImage}
+                resizeMode="contain"
+              />
+            </View>
           </View>
-        </View>
 
-        {/* Sol ve Sağ Ok Görselleri - Container Düşme Animasyonu */}
-        <Animated.View
-          style={[
-            styles.directionalArrowsContainer,
-            {
-              transform: [{translateY: containerTranslate}],
-            },
-          ]}>
-          <Image
-            source={require('../../assets/HomeScreenAssets/Solok.png')}
-            style={styles.directionalArrow}
-            resizeMode="contain"
-          />
-          <Image
-            source={require('../../assets/HomeScreenAssets/Sağok.png')}
-            style={styles.directionalArrowSmall}
-            resizeMode="contain"
-          />
-        </Animated.View>
-
-        {/* Kamera Butonu */}
-        <View style={styles.cameraButtonContainer}>
-          <TouchableOpacity
-            style={styles.cameraButton}
-            onPress={() => navigation.navigate('Tara')}>
+          <Animated.View
+            style={[
+              styles.directionalArrowsContainer,
+              {
+                transform: [{translateY: containerTranslate}],
+              },
+            ]}>
             <Image
-              source={require('../../assets/HomeScreenAssets/Tara.png')}
-              style={styles.cameraIcon}
+              source={require('../../assets/HomeScreenAssets/Solok.png')}
+              style={styles.directionalArrow}
               resizeMode="contain"
             />
-          </TouchableOpacity>
+            <Image
+              source={require('../../assets/HomeScreenAssets/Sağok.png')}
+              style={styles.directionalArrowSmall}
+              resizeMode="contain"
+            />
+          </Animated.View>
         </View>
+      </ScrollView>
+
+      <View style={styles.cameraButtonContainer}>
+        <TouchableOpacity
+          style={styles.cameraButton}
+          onPress={() => navigation.navigate('Tara')}>
+          <Image
+            source={require('../../assets/HomeScreenAssets/Tara.png')}
+            style={styles.cameraIcon}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -206,24 +198,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  scrollView: {
+    flex: 1,
+  },
   innerContainer: {
     flex: 1,
     minHeight: SCREEN_HEIGHT,
   },
   header: {
     width: '100%',
-    height: verticalScale * 110,
+    height: normalizeVertical(isSmallScreen ? 90 : 110),
     backgroundColor: '#FFA500',
     flexDirection: 'row',
-    paddingTop: verticalScale * 30,
+    paddingTop:
+      Platform.OS === 'ios' ? normalizeVertical(40) : normalizeVertical(30),
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
   logoContainer: {
     position: 'relative',
-    width: SCREEN_WIDTH - 20,
-    height: verticalScale * 65,
-    marginLeft: scale * 10,
+    width: SCREEN_WIDTH - normalize(20),
+    height: normalizeVertical(isSmallScreen ? 55 : 65),
+    marginLeft: normalize(10),
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -239,26 +235,26 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   logo: {
-    width: scale * 200,
-    height: verticalScale * 70,
+    width: normalize(isSmallScreen ? 180 : 200),
+    height: normalizeVertical(isSmallScreen ? 60 : 70),
     zIndex: 1,
-    marginLeft: scale * -20,
+    marginLeft: normalize(-20),
     position: 'absolute',
     left: 0,
   } as ImageStyle,
   logoText: {
     color: '#000',
-    fontSize: scale * 10,
+    fontSize: normalize(isSmallScreen ? 9 : 10),
     fontWeight: '500',
-    marginLeft: scale * 150,
-    marginTop: verticalScale * 10,
+    marginLeft: normalize(isSmallScreen ? 130 : 150),
+    marginTop: normalizeVertical(isSmallScreen ? 8 : 10),
     zIndex: 1,
-    width: scale * 320,
+    width: normalize(isSmallScreen ? 280 : 320),
   },
   sloganContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 10,
+    paddingHorizontal: normalize(20),
+    paddingTop: normalizeVertical(isSmallScreen ? 30 : 40),
+    paddingBottom: normalizeVertical(10),
     alignItems: 'center',
   },
   sloganContentContainer: {
@@ -267,65 +263,69 @@ const styles = StyleSheet.create({
   },
   sloganBackground: {
     borderRadius: 15,
-    padding: 10,
+    padding: normalize(10),
     width: '100%',
     alignItems: 'center',
   },
   sloganOverlayContainer: {
     position: 'relative',
-    width: SCREEN_WIDTH - 40,
-    height: verticalScale * 240,
+    width: SCREEN_WIDTH - normalize(40),
+    height: normalizeVertical(isSmallScreen ? 200 : 240),
     alignItems: 'center',
     marginLeft: 0,
   },
   sloganIcon: {
-    width: scale * 280,
-    height: verticalScale * 240,
+    width: normalize(isSmallScreen ? 240 : 280),
+    height: normalizeVertical(isSmallScreen ? 200 : 240),
     position: 'absolute',
     zIndex: 1,
   } as ImageStyle,
   sloganTextContainer: {
     position: 'absolute',
     width: '80%',
-    paddingLeft: scale * 80,
-    paddingTop: verticalScale * 40,
+    paddingLeft: normalize(isSmallScreen ? 60 : 80),
+    paddingTop: normalizeVertical(isSmallScreen ? 30 : 40),
     zIndex: 2,
   },
   sloganText: {
-    fontSize: scale * 16,
+    fontSize: normalize(isSmallScreen ? 14 : 16),
     color: '#333',
     fontStyle: 'italic',
-    marginBottom: verticalScale * 5,
-    lineHeight: verticalScale * 22,
+    marginBottom: normalizeVertical(5),
+    lineHeight: normalizeVertical(isSmallScreen ? 18 : 22),
   },
   sloganSignature: {
-    fontSize: 14,
+    fontSize: normalize(isSmallScreen ? 12 : 14),
     color: '#666',
     alignSelf: 'flex-end',
     fontStyle: 'italic',
-    marginRight: 20,
+    marginRight: normalize(20),
   },
   boykotContainer: {
     alignItems: 'center',
-    marginTop: -35,
+    marginTop: normalizeVertical(-35),
   },
   boykotBorder: {
-    padding: scale * 10,
+    padding: normalize(10),
     width: '45%',
     alignItems: 'center',
   },
   boykotImage: {
-    width: scale * 140,
-    height: verticalScale * 180,
+    width: normalize(isSmallScreen ? 120 : 140),
+    height: normalizeVertical(isSmallScreen ? 160 : 180),
   } as ImageStyle,
   cameraButtonContainer: {
+    position: 'absolute',
+    bottom: normalizeVertical(40),
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    marginTop: 0,
-    marginBottom: 2,
+    justifyContent: 'center',
+    zIndex: 10,
   },
   cameraButton: {
-    width: scale * 130,
-    height: scale * 130,
+    width: normalize(130),
+    height: normalize(130),
     shadowColor: '#FFFFFF',
     shadowOffset: {
       width: 0,
@@ -362,18 +362,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '20%',
     alignSelf: 'center',
-    marginBottom: verticalScale * 10,
-    gap: scale * -15,
+    marginBottom: normalizeVertical(isSmallScreen ? 5 : 10),
+    gap: normalize(-15),
     alignItems: 'center',
-    marginTop: verticalScale * 10,
+    marginTop: normalizeVertical(isSmallScreen ? 5 : 10),
   },
   directionalArrow: {
-    width: scale * 75,
-    height: verticalScale * 105,
+    width: normalize(isSmallScreen ? 65 : 75),
+    height: normalizeVertical(isSmallScreen ? 90 : 105),
   } as ImageStyle,
   directionalArrowSmall: {
-    width: scale * 55,
-    height: verticalScale * 75,
-    marginTop: verticalScale * 15,
+    width: normalize(isSmallScreen ? 45 : 55),
+    height: normalizeVertical(isSmallScreen ? 65 : 75),
+    marginTop: normalizeVertical(isSmallScreen ? 10 : 15),
   } as ImageStyle,
 });
