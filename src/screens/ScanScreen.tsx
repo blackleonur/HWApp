@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Dimensions,
+  Linking,
 } from 'react-native';
 import {
   Camera,
@@ -82,27 +83,69 @@ export default function ScanScreen() {
 
   useEffect(() => {
     console.log('ScanScreen yükleniyor...');
-    (async () => {
-      const cameraPermission = await Camera.requestCameraPermission();
-      let mediaLibraryPermission = 'granted';
+    const requestPermissions = async () => {
+      try {
+        // Kamera izni
+        const cameraPermission = await Camera.requestCameraPermission();
+        console.log('Kamera izni:', cameraPermission);
 
-      if (Platform.OS === 'ios') {
-        const result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
-        mediaLibraryPermission =
-          result === RESULTS.GRANTED ? 'granted' : 'denied';
-      } else if (Platform.OS === 'android') {
-        // Android için galeri izni isteyelim
-        const result =
-          (await request(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES)) ||
-          (await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE));
-        mediaLibraryPermission =
-          result === RESULTS.GRANTED ? 'granted' : 'denied';
+        // Android için medya izinleri
+        let mediaLibraryPermission = 'denied';
+        if (Platform.OS === 'android') {
+          if (Platform.Version >= 33) {
+            // Android 13 ve üzeri için
+            mediaLibraryPermission = await request(
+              PERMISSIONS.ANDROID.READ_MEDIA_IMAGES,
+            );
+          } else {
+            // Android 13 altı için
+            mediaLibraryPermission = await request(
+              PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+            );
+          }
+          console.log('Medya izni:', mediaLibraryPermission);
+        } else if (Platform.OS === 'ios') {
+          // iOS için foto izni
+          mediaLibraryPermission = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+          console.log('iOS Foto izni:', mediaLibraryPermission);
+        }
+
+        // İzinleri kontrol et ve state'i güncelle
+        const hasAllPermissions =
+          cameraPermission === 'granted' &&
+          (mediaLibraryPermission === 'granted' ||
+            mediaLibraryPermission === RESULTS.GRANTED);
+
+        setHasPermission(hasAllPermissions);
+
+        // Eğer izinler reddedildiyse kullanıcıyı bilgilendir
+        if (!hasAllPermissions) {
+          Alert.alert(
+            'İzin Gerekli',
+            'Uygulamanın düzgün çalışması için kamera ve galeri izinleri gereklidir. Lütfen ayarlardan izinleri veriniz.',
+            [
+              {
+                text: 'Ayarlara Git',
+                onPress: () => {
+                  if (Platform.OS === 'ios') {
+                    Linking.openURL('app-settings:');
+                  } else {
+                    Linking.openSettings();
+                  }
+                },
+              },
+              {
+                text: 'İptal',
+                style: 'cancel',
+              },
+            ],
+          );
+        }
+      } catch (error) {
+        console.error('İzin isteme hatası:', error);
+        setHasPermission(false);
       }
-
-      setHasPermission(
-        cameraPermission === 'granted' && mediaLibraryPermission === 'granted',
-      );
-    })();
+    };
 
     const generateDeviceId = async () => {
       let id = await AsyncStorage.getItem('deviceId');
@@ -113,6 +156,7 @@ export default function ScanScreen() {
       setDeviceId(id);
     };
 
+    requestPermissions();
     generateDeviceId();
   }, []);
 

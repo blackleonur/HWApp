@@ -139,23 +139,20 @@ export default function App() {
               bottom: 35,
               left: 0,
               right: 0,
-              ...Platform.select({
-                ios: {
-                  shadowOffset: {width: 0, height: -2},
-                  shadowOpacity: 0.1,
-                  shadowRadius: 3,
-                },
-                android: {
-                  elevation: 8,
-                },
-              }),
             },
             tabBarBackground: () => (
-              <ImageBackground
-                source={require('./assets/HomeScreenAssets/AltBar.png')}
-                style={{height: 130, width: '100%'}}
-                resizeMode="cover"
-              />
+              <View
+                style={{
+                  height: 75,
+                  width: '100%',
+                  backgroundColor: 'transparent',
+                }}>
+                <ImageBackground
+                  source={require('./assets/HomeScreenAssets/AltBar.png')}
+                  style={{height: 130, width: '100%'}}
+                  resizeMode="cover"
+                />
+              </View>
             ),
             tabBarLabelStyle: {
               fontSize: 10,
@@ -202,7 +199,7 @@ export default function App() {
       </NavigationContainer>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="transparent"
+        backgroundColor="rgba(0,0,0,0.05)"
         translucent
       />
     </>

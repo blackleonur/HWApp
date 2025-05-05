@@ -9,7 +9,6 @@ import {
   Linking,
   Image,
 } from 'react-native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import {API_URL} from '../config/api';
 
 export default function FeedbackScreen() {
@@ -104,22 +103,35 @@ export default function FeedbackScreen() {
         <View style={styles.socialIconsContainer}>
           <TouchableOpacity
             style={styles.socialButton}
-            onPress={() => Linking.openURL('https://twitter.com/blackleonur')}>
-            <AntDesign name="twitter" size={28} color="#1DA1F2" />
+            onPress={() => Linking.openURL('https://x.com/kamiboykot')}>
+            <Image
+              source={require('../../assets/twitter.png')}
+              style={styles.socialIcon}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.socialButton}
             onPress={() =>
-              Linking.openURL('https://instagram.com/blackleonur')
+              Linking.openURL('https://www.instagram.com/kamiboykot')
             }>
-            <AntDesign name="instagram" size={28} color="#E4405F" />
+            <Image
+              source={require('../../assets/instagram.png')}
+              style={styles.socialIcon}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.socialButton}
-            onPress={() => Linking.openURL('https://facebook.com/blackleonur')}>
-            <AntDesign name="facebook-square" size={28} color="#1877F2" />
+            onPress={() =>
+              Linking.openURL(
+                'https://www.facebook.com/profile.php?id=61575997312971',
+              )
+            }>
+            <Image
+              source={require('../../assets/facebook.png')}
+              style={styles.socialIcon}
+            />
           </TouchableOpacity>
         </View>
 
@@ -208,5 +220,9 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     padding: 10,
+  },
+  socialIcon: {
+    width: 28,
+    height: 28,
   },
 });

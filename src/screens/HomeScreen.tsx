@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   } as ImageStyle,
   cameraButtonContainer: {
     position: 'absolute',
-    bottom: normalizeVertical(40),
+    bottom: normalizeVertical(isSmallScreen ? 60 : 80),
     left: 0,
     right: 0,
     alignItems: 'center',
