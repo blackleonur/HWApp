@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   } as ImageStyle,
   cameraButtonContainer: {
     position: 'absolute',
-    bottom: normalizeVertical(isSmallScreen ? 60 : 80),
+    bottom: normalizeVertical(isSmallScreen ? 45 : 65),
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -362,10 +362,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '20%',
     alignSelf: 'center',
-    marginBottom: normalizeVertical(isSmallScreen ? 5 : 10),
-    gap: normalize(-15),
+    marginBottom: normalizeVertical(isSmallScreen ? 35 : 45),
+    gap: normalize(-25),
     alignItems: 'center',
-    marginTop: normalizeVertical(isSmallScreen ? 5 : 10),
+    marginTop: normalizeVertical(isSmallScreen ? -10 : -15),
   },
   directionalArrow: {
     width: normalize(isSmallScreen ? 65 : 75),
