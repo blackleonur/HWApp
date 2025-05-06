@@ -10,6 +10,7 @@ import {
   TextInput,
   RefreshControl,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import API_URL from '../Apiurl';
@@ -44,6 +45,13 @@ const DashedBorder = () => {
     </View>
   );
 };
+
+// Ekran boyutlarını al
+const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
+
+// Dinamik değerler için yardımcı fonksiyonlar
+const scale = (size: number) => (screenWidth / 375) * size; // 375 iPhone 6/7/8 genişliği baz alınarak
+const verticalScale = (size: number) => (screenHeight / 812) * size; // 812 iPhone X yüksekliği baz alınarak
 
 const QueryScreen = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -239,6 +247,21 @@ const QueryScreen = () => {
     );
   };
 
+  // Ekran yönü değişikliğini dinlemek için useEffect ekleyelim
+  useEffect(() => {
+    const onChange = () => {
+      const {width, height} = Dimensions.get('window');
+      // Ekran boyutları değiştiğinde gerekli güncellemeleri yap
+    };
+
+    Dimensions.addEventListener('change', onChange);
+
+    return () => {
+      // React Native'in yeni versiyonlarında removeEventListener kullanılmıyor
+      // Eski versiyonlarda gerekirse bu kısmı ekleyebilirsiniz
+    };
+  }, []);
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
@@ -374,48 +397,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scrollContainer: {
-    paddingBottom: 20,
-    paddingHorizontal: 16,
+    paddingBottom: verticalScale(100), // Footer için daha dinamik padding
+    paddingHorizontal: scale(16),
   },
   header: {
     width: '100%',
-    height: 110,
+    height: verticalScale(110),
     backgroundColor: '#FFA500',
     flexDirection: 'row',
-    paddingTop: 30,
+    paddingTop: verticalScale(30),
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginBottom: 10,
+    marginBottom: verticalScale(10),
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 15,
+    paddingHorizontal: scale(15),
   },
   searchBarContainer: {
     position: 'relative',
     flex: 1,
-    height: 40,
-    marginRight: 10,
+    height: verticalScale(40),
+    marginRight: scale(10),
   },
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: 5,
-    height: 40,
+    borderRadius: scale(5),
+    height: verticalScale(40),
     zIndex: 1,
   },
   searchIcon: {
-    marginLeft: 10,
-    marginRight: 5,
+    marginLeft: scale(10),
+    marginRight: scale(5),
   },
   searchBar: {
     flex: 1,
-    height: 40,
-    paddingRight: 10,
+    height: verticalScale(40),
+    paddingRight: scale(10),
   },
   dashedBorderContainer: {
     position: 'absolute',
@@ -429,14 +452,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   logo: {
-    width: 100,
-    height: 50,
+    width: scale(100),
+    height: verticalScale(50),
     zIndex: 1,
   },
   categoryContainer: {
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: scale(12),
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
@@ -448,29 +471,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: scale(16),
+    paddingVertical: verticalScale(12),
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   categoryTitle: {
-    fontSize: 18,
+    fontSize: scale(18),
     fontWeight: 'bold',
     color: '#333',
   },
   productCount: {
-    fontSize: 14,
+    fontSize: scale(14),
     color: '#888',
   },
   productList: {
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    paddingVertical: verticalScale(16),
+    paddingHorizontal: scale(12),
   },
   productCard: {
-    width: 160,
+    width: screenWidth * 0.4, // Ekran genişliğinin %40'ı
+    maxWidth: scale(160),
     backgroundColor: 'white',
-    borderRadius: 12,
-    marginRight: 16,
+    borderRadius: scale(12),
+    marginRight: scale(16),
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
@@ -481,52 +505,52 @@ const styles = StyleSheet.create({
   productImageContainer: {
     position: 'relative',
     width: '100%',
-    height: 120,
+    height: verticalScale(120),
   },
   productImage: {
     width: '100%',
     height: '100%',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    borderTopLeftRadius: scale(12),
+    borderTopRightRadius: scale(12),
     backgroundColor: '#f5f5f5',
     resizeMode: 'contain',
   },
   boycottBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: scale(8),
+    right: scale(8),
     backgroundColor: 'rgba(255, 0, 0, 0.8)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: scale(8),
+    paddingVertical: verticalScale(4),
+    borderRadius: scale(4),
   },
   boycottBadgeText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: scale(10),
     fontWeight: 'bold',
   },
   productInfo: {
-    padding: 12,
+    padding: scale(12),
   },
   productName: {
-    fontSize: 16,
+    fontSize: scale(16),
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
     color: '#333',
   },
   productBrand: {
-    fontSize: 14,
+    fontSize: scale(14),
     color: '#666',
-    marginBottom: 8,
+    marginBottom: verticalScale(8),
   },
   statusIndicator: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: scale(8),
+    paddingVertical: verticalScale(4),
+    borderRadius: scale(4),
     alignItems: 'center',
   },
   statusText: {
-    fontSize: 12,
+    fontSize: scale(12),
     fontWeight: '500',
   },
   noProductsContainer: {
