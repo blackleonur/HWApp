@@ -1,5 +1,12 @@
 import React from 'react';
-import {View, Platform, Image, ImageBackground, StatusBar} from 'react-native';
+import {
+  View,
+  Platform,
+  Image,
+  ImageBackground,
+  StatusBar,
+  Dimensions,
+} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -17,6 +24,8 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const NewsStack = createNativeStackNavigator();
 const QueryStack = createNativeStackNavigator();
 const ScanStack = createNativeStackNavigator();
+
+const windowWidth = Dimensions.get('window').width;
 
 function NewsStackNavigator() {
   return (
@@ -79,7 +88,7 @@ export default function App() {
                       width: 55,
                       height: 55,
                       opacity: focused ? 1 : 0.7,
-                      marginRight: 10,
+                      marginRight: windowWidth * 0.02,
                     }}
                     resizeMode="contain"
                   />
@@ -92,7 +101,7 @@ export default function App() {
                       width: 53,
                       height: 53,
                       opacity: focused ? 1 : 0.7,
-                      marginLeft: 20,
+                      marginLeft: windowWidth * 0.15,
                     }}
                     resizeMode="contain"
                   />
@@ -105,7 +114,7 @@ export default function App() {
                       width: 53,
                       height: 53,
                       opacity: focused ? 1 : 0.7,
-                      marginLeft: 145,
+                      marginLeft: windowWidth * 0.22,
                     }}
                     resizeMode="contain"
                   />
@@ -118,7 +127,7 @@ export default function App() {
                       width: 53,
                       height: 53,
                       opacity: focused ? 1 : 0.7,
-                      marginLeft: 180,
+                      marginLeft: windowWidth * 0.38,
                     }}
                     resizeMode="contain"
                   />
@@ -139,6 +148,9 @@ export default function App() {
               bottom: 35,
               left: 0,
               right: 0,
+              justifyContent: 'space-between',
+              elevation: 0,
+              shadowOpacity: 0,
             },
             tabBarBackground: () => (
               <View
@@ -149,7 +161,12 @@ export default function App() {
                 }}>
                 <ImageBackground
                   source={require('./assets/HomeScreenAssets/AltBar.png')}
-                  style={{height: 130, width: '100%'}}
+                  style={{
+                    height: 130,
+                    width: '100%',
+                    backgroundColor: 'transparent',
+                    opacity: 1,
+                  }}
                   resizeMode="cover"
                 />
               </View>
@@ -163,7 +180,6 @@ export default function App() {
             tabBarItemStyle: {
               padding: 5,
               marginTop: 35,
-              marginHorizontal: 25,
             },
           })}>
           <Tab.Screen
@@ -177,9 +193,19 @@ export default function App() {
             options={{headerShown: false, tabBarLabel: ''}}
           />
           <Tab.Screen
+            name="GörünmezButon"
+            component={View}
+            options={{
+              headerShown: false,
+              tabBarLabel: '',
+              tabBarIcon: () => null,
+              tabBarButton: () => <View style={{width: 50}} />,
+            }}
+          />
+          <Tab.Screen
             name="Geribildirim"
             component={FeedbackScreen}
-            options={{tabBarLabel: ''}}
+            options={{headerShown: false, tabBarLabel: ''}}
           />
           <Tab.Screen
             name="Sorgula"

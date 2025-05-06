@@ -8,6 +8,10 @@ import {
   Alert,
   Linking,
   Image,
+  ScrollView,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import {API_URL} from '../config/api';
 
@@ -62,144 +66,157 @@ export default function FeedbackScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Geribildirim Formu</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Geribildirim Formu</Text>
 
-      <View style={styles.form}>
-        <Text style={styles.label}>İsim Soyisim</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="İsim soyisim giriniz"
-        />
+        <View style={styles.form}>
+          <Text style={styles.label}>İsim Soyisim</Text>
+          <TextInput
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+            placeholder="İsim soyisim giriniz"
+          />
 
-        <Text style={styles.label}>E-posta</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          placeholder="E-posta adresinizi girin"
-          keyboardType="email-address"
-        />
+          <Text style={styles.label}>E-posta</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="E-posta adresinizi girin"
+            keyboardType="email-address"
+          />
 
-        <Text style={styles.label}>Geribildiriminiz</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={feedback}
-          onChangeText={setFeedback}
-          placeholder="Geribildiriminizi yazın"
-          multiline
-          numberOfLines={5}
-        />
+          <Text style={styles.label}>Geribildiriminiz</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={feedback}
+            onChangeText={setFeedback}
+            placeholder="Geribildiriminizi yazın"
+            multiline
+            numberOfLines={5}
+          />
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Gönder</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.socialContainer}>
-        <Text style={styles.socialTitle}>Bizi Sosyal Medyada Takip Edin</Text>
-        <View style={styles.socialIconsContainer}>
-          <TouchableOpacity
-            style={styles.socialButton}
-            onPress={() => Linking.openURL('https://x.com/kamiboykot')}>
-            <Image
-              source={require('../../assets/twitter.png')}
-              style={styles.socialIcon}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.socialButton}
-            onPress={() =>
-              Linking.openURL('https://www.instagram.com/kamiboykot')
-            }>
-            <Image
-              source={require('../../assets/instagram.png')}
-              style={styles.socialIcon}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.socialButton}
-            onPress={() =>
-              Linking.openURL(
-                'https://www.facebook.com/profile.php?id=61575997312971',
-              )
-            }>
-            <Image
-              source={require('../../assets/facebook.png')}
-              style={styles.socialIcon}
-            />
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitButtonText}>Gönder</Text>
           </TouchableOpacity>
         </View>
 
-        <Image
-          source={require('../../assets/HomeScreenAssets/LOGO.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-    </View>
+        <View style={styles.socialContainer}>
+          <Text style={styles.socialTitle}>Bizi Sosyal Medyada Takip Edin</Text>
+          <View style={styles.socialIconsContainer}>
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={() => Linking.openURL('https://x.com/kamiboykot')}>
+              <Image
+                source={require('../../assets/twitter.png')}
+                style={styles.socialIcon}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={() =>
+                Linking.openURL('https://www.instagram.com/kamiboykot')
+              }>
+              <Image
+                source={require('../../assets/instagram.png')}
+                style={styles.socialIcon}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={() =>
+                Linking.openURL(
+                  'https://www.facebook.com/profile.php?id=61575997312971',
+                )
+              }>
+              <Image
+                source={require('../../assets/facebook.png')}
+                style={styles.socialIcon}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Image
+            source={require('../../assets/HomeScreenAssets/LOGO.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 20,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    padding: windowWidth * 0.05,
   },
   title: {
-    fontSize: 24,
+    fontSize: windowWidth * 0.06,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: windowHeight * 0.02,
     textAlign: 'center',
   },
   form: {
     width: '100%',
   },
   label: {
-    fontSize: 16,
-    marginBottom: 5,
+    fontSize: windowWidth * 0.04,
+    marginBottom: windowHeight * 0.01,
     fontWeight: '500',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
-    fontSize: 16,
+    padding: windowWidth * 0.03,
+    marginBottom: windowHeight * 0.02,
+    fontSize: windowWidth * 0.04,
+    width: '100%',
   },
   textArea: {
-    height: 120,
+    height: windowHeight * 0.15,
     textAlignVertical: 'top',
   },
   submitButton: {
     backgroundColor: '#808080',
-    padding: 15,
+    padding: windowWidth * 0.04,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 30,
+    marginTop: windowHeight * 0.02,
+    marginBottom: windowHeight * 0.03,
   },
   submitButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: windowWidth * 0.04,
     fontWeight: '600',
   },
   socialContainer: {
-    paddingTop: 20,
+    paddingTop: windowHeight * 0.02,
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
   logo: {
-    width: '100%',
-    height: 60,
+    width: windowWidth * 0.8,
+    height: windowHeight * 0.08,
     alignSelf: 'center',
-    marginTop: 100,
+    marginTop: windowHeight * 0.02,
     shadowColor: '#fff',
     shadowOffset: {width: 0, height: 0},
     shadowOpacity: 0.8,
@@ -208,21 +225,21 @@ const styles = StyleSheet.create({
   },
   socialTitle: {
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: windowWidth * 0.04,
     fontWeight: '500',
-    marginBottom: 15,
+    marginBottom: windowHeight * 0.02,
   },
   socialIconsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 40,
+    gap: windowWidth * 0.1,
   },
   socialButton: {
-    padding: 10,
+    padding: windowWidth * 0.02,
   },
   socialIcon: {
-    width: 28,
-    height: 28,
+    width: windowWidth * 0.07,
+    height: windowWidth * 0.07,
   },
 });

@@ -262,6 +262,13 @@ export default function ScanScreen() {
 
   const processImage = async (imageUri: string) => {
     try {
+      // Önce limit kontrolü yapalım
+      const canProceed = await checkRequestLimit();
+      if (!canProceed) {
+        setIsProcessing(false);
+        return null;
+      }
+
       const resizedImage = await ImageResizer.createResizedImage(
         imageUri,
         1000,
@@ -313,6 +320,16 @@ export default function ScanScreen() {
         if (
           googleVisionResult.responses?.[0]?.textAnnotations?.[0]?.description
         ) {
+          // Google Vision başarılı olduğunda sorgu sayısını artır
+          const requestUrl = `${API_URL}/api/Product/increment-request-count`;
+          await fetch(requestUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              DeviceId: deviceId,
+            },
+          });
+
           const text =
             googleVisionResult.responses[0].textAnnotations[0].description;
           setScannedText(text);
@@ -326,6 +343,7 @@ export default function ScanScreen() {
         console.error('Google Vision API hatası:', error);
       }
 
+      // Google Vision başarısız olduğunda OCR.space'i dene
       setProgressStatus('Alternatif OCR hizmeti kullanılıyor...');
       setProgressPercent(70);
 
@@ -360,12 +378,29 @@ export default function ScanScreen() {
         console.error('OCR.space API hatası:', error);
       }
 
+      // Her iki OCR servisi de metin bulamadığında
       setProgressStatus('');
       setProgressPercent(0);
       setIsProcessing(false);
       Alert.alert(
-        'Hata',
-        'Metin tanıma işlemi başarısız oldu. Lütfen tekrar deneyin.',
+        'Metin Bulunamadı',
+        'Görüntüde okunabilir bir metin bulunamadı. Lütfen tekrar deneyin.',
+        [
+          {
+            text: 'Tamam',
+            onPress: () => {
+              // Sayfayı yeniden yükle
+              setScannedText('');
+              setProductResult(null);
+              setPreviewImage(null);
+              setPreviewModalVisible(false);
+              setCameraReady(false);
+              setTimeout(() => {
+                setCameraReady(true);
+              }, 100);
+            },
+          },
+        ],
       );
       return null;
     } catch (error) {
@@ -376,6 +411,22 @@ export default function ScanScreen() {
       Alert.alert(
         'Hata',
         'Metin tanıma işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.',
+        [
+          {
+            text: 'Tamam',
+            onPress: () => {
+              // Hata durumunda da sayfayı yeniden yükle
+              setScannedText('');
+              setProductResult(null);
+              setPreviewImage(null);
+              setPreviewModalVisible(false);
+              setCameraReady(false);
+              setTimeout(() => {
+                setCameraReady(true);
+              }, 100);
+            },
+          },
+        ],
       );
       return null;
     }
@@ -384,11 +435,8 @@ export default function ScanScreen() {
   const queryProduct = async (productName: string) => {
     setIsQueryLoading(true);
     try {
-      const canProceed = await checkRequestLimit();
-      if (!canProceed) {
-        setIsQueryLoading(false);
-        return;
-      }
+      // Artık burada limit kontrolü yapmaya gerek yok çünkü
+      // processImage fonksiyonunda yapılıyor ve sorgu sayısı artırılıyor
 
       const response = await fetch(
         `${API_URL}/api/Product/search-by-name/${encodeURIComponent(
@@ -727,14 +775,14 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderWidth: 2,
-    borderColor: '#2196F3',
+    borderColor: '#E0E0E0',
     backgroundColor: 'transparent',
   },
   scanFrameCorner: {
     position: 'absolute',
     width: normalize(20),
     height: normalize(20),
-    borderColor: '#2196F3',
+    borderColor: '#E0E0E0',
     borderWidth: 3,
   },
   buttonContainer: {
@@ -747,7 +795,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   button: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#FFA726',
     padding: normalize(15),
     borderRadius: normalize(5),
     alignItems: 'center',
@@ -793,7 +841,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#2196F3',
+    backgroundColor: '#FFA726',
     borderRadius: 10,
   },
   progressText: {
@@ -880,10 +928,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   cancelButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: '#EF5350',
   },
   queryButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#66BB6A',
   },
   modalButtonText: {
     color: 'white',
@@ -914,25 +962,25 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   boycottStatusTrue: {
-    backgroundColor: '#ffcdd2',
+    backgroundColor: '#FFE5E5',
     borderWidth: 1,
-    borderColor: '#ef9a9a',
+    borderColor: '#FFB8B8',
   },
   boycottStatusFalse: {
-    backgroundColor: '#c8e6c9',
+    backgroundColor: '#E5FFE5',
     borderWidth: 1,
-    borderColor: '#a5d6a7',
+    borderColor: '#B8FFB8',
   },
   boycottStatusText: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#d32f2f',
+    color: '#FF0000',
     textAlign: 'center',
   },
   boycottStatusTextSafe: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#2e7d32',
+    color: '#008000',
     textAlign: 'center',
   },
   noProductText: {
@@ -959,7 +1007,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   newScanButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#FFA726',
   },
   feedbackButton: {
     backgroundColor: '#4CAF50',
@@ -977,7 +1025,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   editButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#42A5F5',
     marginVertical: 10,
     width: '100%',
   },

@@ -4,6 +4,7 @@ export type TabParamList = {
   'Ana Sayfa': undefined;
   Haberler: undefined;
   Geribildirim: undefined;
+  GörünmezButon: undefined;
   Sorgula: undefined;
   Tara: undefined;
 };
