@@ -180,7 +180,7 @@ const QueryDetailScreen = () => {
                   : 'https://via.placeholder.com/300',
             }}
             style={styles.productImage}
-            resizeMode="cover"
+            resizeMode="contain"
           />
           {product.isBoycotted && (
             <View style={styles.boycottBadge}>
@@ -301,11 +301,13 @@ const styles = StyleSheet.create({
   imageContainer: {
     position: 'relative',
     width: '100%',
-    height: 250,
+    height: 300,
+    backgroundColor: '#f5f5f5',
   },
   productImage: {
     width: '100%',
     height: '100%',
+    resizeMode: 'contain',
   },
   boycottBadge: {
     position: 'absolute',

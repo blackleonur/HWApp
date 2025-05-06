@@ -27,6 +27,7 @@ import API_URL from '../Apiurl';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Google Cloud Vision API anahtarınız - ürün etiketleri için daha iyi çalışır
 const GOOGLE_CLOUD_VISION_API_KEY = 'AIzaSyD3TNvnNlCMR1yP4S1m6bykN6venCY91sw';
@@ -594,24 +595,29 @@ export default function ScanScreen() {
           <View style={styles.modalView}>
             <Text style={styles.modalTitle}>Fotoğraf Önizleme</Text>
             {previewImage && (
-              <View style={styles.previewContainer}>
+              <View style={styles.previewWrapper}>
                 <Image
                   source={{uri: previewImage}}
                   style={styles.previewImage}
                   resizeMode="contain"
                 />
+                <View style={styles.previewOverlay}>
+                  <Text style={styles.previewHint}>
+                    Fotoğraf net ve okunaklı görünüyor mu?
+                  </Text>
+                </View>
               </View>
             )}
             <View style={styles.previewButtonRow}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
+                style={[styles.previewButton, styles.retakeButton]}
                 onPress={handlePreviewCancel}>
-                <Text style={styles.modalButtonText}>Yeniden Çek</Text>
+                <Text style={styles.previewButtonText}>Yeniden Çek</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, styles.queryButton]}
+                style={[styles.previewButton, styles.confirmButton]}
                 onPress={handlePreviewConfirm}>
-                <Text style={styles.modalButtonText}>Onayla</Text>
+                <Text style={styles.previewButtonText}>Onayla</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -623,43 +629,46 @@ export default function ScanScreen() {
         transparent={true}
         visible={editModalVisible}
         onRequestClose={() => setEditModalVisible(false)}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}>
+        <View style={styles.modalOverlay}>
           <View style={styles.modalView}>
             <Text style={styles.modalTitle}>Tarama Sonucu</Text>
-            <View style={styles.notFoundContainer}>
-              <Text style={styles.notFoundText}>
-                "{scannedText}" ürününe dair bir kayıt bulunmamaktadır
+            <ScrollView
+              style={styles.modalScrollView}
+              showsVerticalScrollIndicator={false}>
+              <View style={styles.notFoundContainer}>
+                <Text style={styles.notFoundText}>
+                  "{scannedText}" ürününe dair bir kayıt bulunmamaktadır
+                </Text>
+              </View>
+              <Text style={styles.editHintText}>
+                Ürün ismini düzenleyip tekrar sorgulayabilirsiniz
               </Text>
-            </View>
-            <Text style={styles.modalSubtitle}>
-              Ürün ismi yanlış ise düzenleyip tekrar sorgulayabilirsiniz
-            </Text>
-            <TextInput
-              style={styles.textInput}
-              value={editableText}
-              onChangeText={setEditableText}
-              multiline
-              placeholder="Ürün adını düzenleyin..."
-              autoFocus={true}
-              returnKeyType="done"
-              blurOnSubmit={true}
-            />
-            <View style={styles.modalButtonRow}>
+              <TextInput
+                style={styles.editInput}
+                value={editableText}
+                onChangeText={setEditableText}
+                multiline
+                placeholder="Ürün adını düzenleyin..."
+                placeholderTextColor="#999"
+                returnKeyType="done"
+                blurOnSubmit={true}
+              />
+            </ScrollView>
+
+            <View style={styles.buttonRow}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
+                style={[styles.actionButton, styles.cancelButton]}
                 onPress={() => setEditModalVisible(false)}>
-                <Text style={styles.modalButtonText}>İptal</Text>
+                <Text style={styles.actionButtonText}>İptal</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, styles.queryButton]}
+                style={[styles.actionButton, styles.confirmButton]}
                 onPress={handleEditSubmit}>
-                <Text style={styles.modalButtonText}>Sorgula</Text>
+                <Text style={styles.actionButtonText}>Sorgula</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       <Modal
@@ -669,21 +678,30 @@ export default function ScanScreen() {
         onRequestClose={() => setResultModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalView}>
-            {isProductFound ? (
-              <>
-                <Text style={styles.modalTitle}>{productResult?.name}</Text>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setResultModalVisible(false)}>
+                <Icon name="close" size={24} color="#666" />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Tarama Sonucu</Text>
+              <View style={styles.closeButtonPlaceholder} />
+            </View>
+
+            <ScrollView style={styles.modalScrollView}>
+              <Text style={styles.scannedTextLabel}>Taranan Metin:</Text>
+              <View style={styles.scannedTextBox}>
+                <Text style={styles.scannedText}>{scannedText}</Text>
+              </View>
+
+              {isProductFound ? (
                 <View style={styles.foundContainer}>
-                  <Text style={styles.scannedText}>
-                    Taranan Metin: {scannedText}
-                  </Text>
                   {productResult?.imageUrl && (
-                    <View style={styles.imageContainer}>
-                      <Image
-                        source={{uri: productResult.imageUrl}}
-                        style={styles.productImage}
-                        resizeMode="contain"
-                      />
-                    </View>
+                    <Image
+                      source={{uri: productResult.imageUrl}}
+                      style={styles.productImage}
+                      resizeMode="contain"
+                    />
                   )}
                   <View
                     style={[
@@ -692,43 +710,46 @@ export default function ScanScreen() {
                         ? styles.boycottStatusTrue
                         : styles.boycottStatusFalse,
                     ]}>
-                    <Text
-                      style={
-                        productResult?.isBoycotted
-                          ? styles.boycottStatusText
-                          : styles.boycottStatusTextSafe
-                      }>
-                      {productResult?.isBoycotted
-                        ? '⚠️ Bu ürün boykot listesindedir!'
-                        : '✅ Bu ürün güvenli listesindedir'}
-                    </Text>
+                    <View style={styles.boycottStatusIconContainer}>
+                      {productResult?.isBoycotted ? (
+                        <Icon name="alert-circle" size={24} color="#D32F2F" />
+                      ) : (
+                        <Icon name="shield-check" size={24} color="#2E7D32" />
+                      )}
+                      <Text
+                        style={
+                          productResult?.isBoycotted
+                            ? styles.boycottStatusText
+                            : styles.boycottStatusTextSafe
+                        }>
+                        {productResult?.isBoycotted
+                          ? 'Bu ürün boykot listesindedir!'
+                          : 'Bu ürün güvenli listesindedir'}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </>
-            ) : (
-              <>
-                <Text style={styles.modalTitle}>Ürün Bulunamadı</Text>
+              ) : (
                 <View style={styles.notFoundContainer}>
                   <Text style={styles.notFoundText}>
-                    "{scannedText}" dair bir kayıt bulunmamaktadır
+                    "{scannedText}" için kayıt bulunamadı
                   </Text>
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.editButton]}
+                    onPress={handleEditText}>
+                    <Icon name="pencil" size={20} color="#FFF" />
+                    <Text style={styles.actionButtonText}>Metni Düzenle</Text>
+                  </TouchableOpacity>
                 </View>
-                <Text style={styles.noProductSubText}>
-                  Taranan metin doğru mu? Değilse düzenleyebilirsiniz.
-                </Text>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.editButton]}
-                  onPress={handleEditText}>
-                  <Text style={styles.modalButtonText}>Metni Düzenle</Text>
-                </TouchableOpacity>
-              </>
-            )}
+              )}
+            </ScrollView>
 
-            <View style={styles.resultButtonRow}>
+            <View style={styles.bottomButtonContainer}>
               <TouchableOpacity
-                style={[styles.resultButton, styles.newScanButton]}
+                style={[styles.actionButton, styles.newScanButton]}
                 onPress={handleNewScan}>
-                <Text style={styles.resultButtonText}>Yeni Tarama</Text>
+                <Icon name="camera" size={20} color="#FFF" />
+                <Text style={styles.actionButtonText}>Yeni Tarama</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -856,93 +877,184 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   modalView: {
     width: '100%',
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 20,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    padding: normalize(20),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: -4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    maxHeight: '90%',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: normalize(20),
+    paddingHorizontal: normalize(5),
+  },
+  closeButton: {
+    width: normalize(24),
+    height: normalize(24),
+  },
+  closeButtonPlaceholder: {
+    width: normalize(24),
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: normalize(20),
+    fontWeight: '600',
+    color: '#1A1A1A',
     textAlign: 'center',
+    marginBottom: normalize(20),
   },
-  modalSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 20,
+  previewWrapper: {
+    position: 'relative',
+    width: '100%',
+    height: normalize(400),
+    backgroundColor: '#F5F5F5',
+    borderRadius: normalize(12),
+    overflow: 'hidden',
+    marginBottom: normalize(20),
+  },
+  previewOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: normalize(15),
+  },
+  previewHint: {
+    color: '#FFFFFF',
+    fontSize: normalize(14),
     textAlign: 'center',
+    fontWeight: '500',
   },
-  scannedTextContainer: {
-    backgroundColor: '#f5f5f5',
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 10,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  scannedTextLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 5,
-    fontWeight: 'bold',
-  },
-  scannedTextContent: {
-    fontSize: 16,
-    color: '#333',
-    lineHeight: 22,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    minHeight: 100,
-    textAlignVertical: 'top',
-    fontSize: 16,
-    marginVertical: 15,
-    backgroundColor: '#fff',
-  },
-  modalButtonRow: {
+  previewButtonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: normalize(10),
   },
-  modalButton: {
+  previewButton: {
     flex: 1,
-    padding: 15,
-    borderRadius: 5,
+    padding: normalize(15),
+    borderRadius: normalize(12),
     alignItems: 'center',
-    marginHorizontal: 5,
+    justifyContent: 'center',
   },
-  cancelButton: {
-    backgroundColor: '#EF5350',
+  retakeButton: {
+    backgroundColor: '#FF5252',
   },
-  queryButton: {
-    backgroundColor: '#66BB6A',
+  confirmButton: {
+    backgroundColor: '#4CAF50',
   },
-  modalButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
+  previewButtonText: {
+    color: '#FFFFFF',
+    fontSize: normalize(16),
+    fontWeight: '600',
+  },
+  boycottStatus: {
+    padding: normalize(15),
+    borderRadius: normalize(12),
+    marginVertical: normalize(10),
+    width: '100%',
+  },
+  boycottStatusIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: normalize(8),
+  },
+  boycottStatusText: {
+    fontWeight: '600',
+    fontSize: normalize(16),
+    color: '#D32F2F',
+    textAlign: 'center',
+  },
+  boycottStatusTextSafe: {
+    fontWeight: '600',
+    fontSize: normalize(16),
+    color: '#2E7D32',
+    textAlign: 'center',
+  },
+  resultButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  resultButton: {
+    width: '100%',
+    padding: normalize(15),
+    borderRadius: normalize(12),
+    backgroundColor: '#FFA726',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newScanButton: {
+    backgroundColor: '#FFA726',
+  },
+  feedbackButton: {
+    backgroundColor: '#4CAF50',
+  },
+  resultButtonText: {
+    color: '#FFFFFF',
+    fontSize: normalize(16),
+    fontWeight: '600',
+  },
+  scannedText: {
+    fontSize: normalize(14),
+    color: '#757575',
+    marginBottom: normalize(10),
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: normalize(20),
+  },
+  editButton: {
+    backgroundColor: '#42A5F5',
+    marginTop: normalize(15),
+  },
+  notFoundContainer: {
+    backgroundColor: '#FFF8E1',
+    padding: normalize(15),
+    borderRadius: normalize(12),
+    marginBottom: normalize(15),
+    borderWidth: 1,
+    borderColor: '#FFE082',
+  },
+  notFoundText: {
+    fontSize: normalize(16),
+    color: '#FF6F00',
+    textAlign: 'center',
+    fontWeight: '500',
+    lineHeight: normalize(24),
+  },
+  foundContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: normalize(12),
+    overflow: 'hidden',
+  },
+  imageContainer: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: normalize(12),
+    padding: normalize(10),
+    marginVertical: normalize(10),
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    overflow: 'hidden',
   },
   productImage: {
     width: '100%',
-    height: 200,
-    marginVertical: 15,
-    borderRadius: 8,
+    height: normalize(200),
+    borderRadius: normalize(8),
   },
   productBrand: {
     fontSize: 16,
@@ -954,39 +1066,56 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     lineHeight: 20,
   },
-  boycottStatus: {
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 20,
+  modalSubtitle: {
+    fontSize: normalize(14),
+    color: '#666666',
+    marginBottom: normalize(10),
+    textAlign: 'center',
+    lineHeight: normalize(20),
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: normalize(12),
+    padding: normalize(15),
+    minHeight: normalize(100),
+    textAlignVertical: 'top',
+    fontSize: normalize(16),
+    marginVertical: normalize(15),
+    backgroundColor: '#FAFAFA',
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: normalize(15),
+  },
+  modalButton: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: normalize(15),
+    borderRadius: normalize(12),
     alignItems: 'center',
-    width: '100%',
+    justifyContent: 'center',
+    marginHorizontal: normalize(5),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  boycottStatusTrue: {
-    backgroundColor: '#FFE5E5',
-    borderWidth: 1,
-    borderColor: '#FFB8B8',
+  cancelButton: {
+    backgroundColor: '#FF5252',
   },
-  boycottStatusFalse: {
-    backgroundColor: '#E5FFE5',
-    borderWidth: 1,
-    borderColor: '#B8FFB8',
+  queryButton: {
+    backgroundColor: '#4CAF50',
   },
-  boycottStatusText: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    color: '#FF0000',
-    textAlign: 'center',
-  },
-  boycottStatusTextSafe: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    color: '#008000',
-    textAlign: 'center',
-  },
-  noProductText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginVertical: 20,
+  modalButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: normalize(16),
   },
   noProductSubText: {
     fontSize: 14,
@@ -994,87 +1123,84 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 20,
   },
-  resultButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  resultButton: {
-    flex: 1,
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  newScanButton: {
-    backgroundColor: '#FFA726',
-  },
-  feedbackButton: {
-    backgroundColor: '#4CAF50',
-  },
-  resultButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  scannedText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 10,
-    fontStyle: 'italic',
-    textAlign: 'center',
-  },
-  editButton: {
-    backgroundColor: '#42A5F5',
-    marginVertical: 10,
-    width: '100%',
-  },
-  notFoundContainer: {
-    backgroundColor: '#fff3e0',
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 15,
+  boycottStatusTrue: {
+    backgroundColor: '#FFEBEE',
     borderWidth: 1,
-    borderColor: '#ffe0b2',
+    borderColor: '#FFCDD2',
   },
-  notFoundText: {
-    fontSize: 16,
-    color: '#e65100',
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  foundContainer: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 10,
+  boycottStatusFalse: {
+    backgroundColor: '#E8F5E9',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  imageContainer: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 10,
-    marginVertical: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  previewContainer: {
-    width: '100%',
-    height: 300,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    marginVertical: 15,
-    overflow: 'hidden',
+    borderColor: '#C8E6C9',
   },
   previewImage: {
     width: '100%',
     height: '100%',
+    resizeMode: 'contain',
   },
-  previewButtonRow: {
+  modalScrollView: {
+    maxHeight: normalize(400),
+    marginBottom: normalize(20),
+  },
+  scannedTextLabel: {
+    fontSize: normalize(14),
+    color: '#666666',
+    marginBottom: normalize(8),
+    fontWeight: '500',
+  },
+  scannedTextBox: {
+    backgroundColor: '#F5F5F5',
+    padding: normalize(15),
+    borderRadius: normalize(12),
+    marginBottom: normalize(20),
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  bottomButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    paddingTop: normalize(15),
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    gap: normalize(10),
+  },
+  actionButton: {
+    flex: 1,
+    height: normalize(50),
+    borderRadius: normalize(12),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: normalize(16),
+    fontWeight: '600',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: normalize(10),
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    paddingTop: normalize(15),
+  },
+  editHintText: {
+    fontSize: normalize(14),
+    color: '#666666',
+    textAlign: 'center',
+    marginBottom: normalize(15),
+    lineHeight: normalize(20),
+  },
+  editInput: {
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: normalize(12),
+    padding: normalize(15),
+    minHeight: normalize(100),
+    fontSize: normalize(16),
+    color: '#1A1A1A',
+    textAlignVertical: 'top',
+    marginBottom: normalize(20),
   },
 });

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import API_URL from '../Apiurl';
 import {useNavigation} from '@react-navigation/native';
@@ -63,8 +64,9 @@ export default function NewsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text>Yükleniyor...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FFA500" />
+        <Text style={styles.loadingText}>Haberler Yükleniyor...</Text>
       </View>
     );
   }
@@ -225,5 +227,17 @@ const styles = StyleSheet.create({
     width: 140,
     height: 50,
     opacity: 15,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#FFA500',
+    fontWeight: '600',
   },
 });

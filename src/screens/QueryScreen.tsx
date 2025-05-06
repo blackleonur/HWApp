@@ -489,6 +489,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     backgroundColor: '#f5f5f5',
+    resizeMode: 'contain',
   },
   boycottBadge: {
     position: 'absolute',

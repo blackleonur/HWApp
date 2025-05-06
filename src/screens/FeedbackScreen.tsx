@@ -13,7 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import {API_URL} from '../config/api';
+import API_URL from '../Apiurl';
 
 export default function FeedbackScreen() {
   const [name, setName] = useState('');
@@ -27,6 +27,7 @@ export default function FeedbackScreen() {
     }
 
     try {
+      console.log('İstek atılıyor:', `${API_URL}/api/Feedback`);
       const response = await fetch(`${API_URL}/api/Feedback`, {
         method: 'POST',
         headers: {
@@ -36,11 +37,16 @@ export default function FeedbackScreen() {
           name: name,
           email: email,
           message: feedback,
+          id: 0,
+          isRead: false,
+          isReplied: false,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Bir hata oluştu');
+        const errorData = await response.json();
+        console.error('Sunucu hatası:', errorData);
+        throw new Error(`Sunucu hatası: ${response.status}`);
       }
 
       Alert.alert(
@@ -58,9 +64,12 @@ export default function FeedbackScreen() {
         ],
       );
     } catch (error) {
+      console.error('Hata detayı:', error);
       Alert.alert(
         'Hata',
-        'Geribildiriminiz gönderilirken bir hata oluştu. Lütfen tekrar deneyiniz.',
+        error instanceof Error
+          ? `Geribildiriminiz gönderilirken bir hata oluştu: ${error.message}. Lütfen tekrar deneyiniz.`
+          : 'Geribildiriminiz gönderilirken bir hata oluştu. Lütfen tekrar deneyiniz.',
       );
     }
   };
@@ -166,6 +175,10 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     padding: windowWidth * 0.05,
+    paddingTop: windowHeight * 0.08,
+    maxWidth: 600,
+    alignSelf: 'center',
+    width: '100%',
   },
   title: {
     fontSize: windowWidth * 0.06,
@@ -185,13 +198,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
-    padding: windowWidth * 0.03,
-    marginBottom: windowHeight * 0.02,
-    fontSize: windowWidth * 0.04,
+    padding: Math.min(windowWidth * 0.03, 15),
+    marginBottom: Math.min(windowHeight * 0.02, 15),
+    fontSize: Math.min(windowWidth * 0.04, 16),
     width: '100%',
   },
   textArea: {
-    height: windowHeight * 0.15,
+    height: Math.min(windowHeight * 0.15, 150),
     textAlignVertical: 'top',
   },
   submitButton: {
@@ -213,10 +226,10 @@ const styles = StyleSheet.create({
     borderTopColor: '#eee',
   },
   logo: {
-    width: windowWidth * 0.8,
-    height: windowHeight * 0.08,
+    width: Math.min(windowWidth * 0.8, 400),
+    height: Math.min(windowHeight * 0.08, 60),
     alignSelf: 'center',
-    marginTop: windowHeight * 0.02,
+    marginTop: Math.min(windowHeight * 0.02, 20),
     shadowColor: '#fff',
     shadowOffset: {width: 0, height: 0},
     shadowOpacity: 0.8,
@@ -233,13 +246,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: windowWidth * 0.1,
+    gap: Math.min(windowWidth * 0.1, 40),
   },
   socialButton: {
     padding: windowWidth * 0.02,
   },
   socialIcon: {
-    width: windowWidth * 0.07,
-    height: windowWidth * 0.07,
+    width: Math.min(windowWidth * 0.07, 30),
+    height: Math.min(windowWidth * 0.07, 30),
   },
 });
